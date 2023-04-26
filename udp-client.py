@@ -97,7 +97,18 @@ def request_file(filename):
 
     response,address = udp_client_socket.recvfrom(1024)
 
-def upload_file()
+def upload_file():
+    udp_client_socket.sendto(b"U", (server_address, port))
+    response, address = udp_client_socket.recvfrom(1024)
+    if response == b"go ahead":
+        filename = input("Filename: ")
+        size = (get_file_size(filename)).to_bytes(8, byteorder='big')
+        udp_client_socket.sendto(size + bytes(filename.encode()), (server_address, port))
+        response, address = udp_client_socket.recvfrom(1024)
+        if response == b"uploaded":
+            return
+
+
 
 def join_Network(name):
 
@@ -126,9 +137,7 @@ if __name__ == "__main__":
                 server_socket.bind((socket.gethostbyname(hostname), tcp_port))
 
             if message == "U":
-                filename = input("Filename: ")
-                size = (get_file_size(filename)).to_bytes(8,byteorder='big')
-                udp_client_socket.sendto(size + bytes(filename.encode()),(server_address,port))
+                upload_file()
 
             '''
             if response == b"request":

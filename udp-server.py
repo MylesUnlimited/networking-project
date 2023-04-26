@@ -24,7 +24,7 @@ def peer_join(name, address):
 def get_file_info(data: bytes) -> (str, int):
     return data[8:].decode(), int.from_bytes(data[:8], byteorder='big')
 
-def upload_file(name, filename, filesize):
+def upload_file(name, filename, filesize, address):
     files[(filename,filesize)] = name
 
 if __name__ == "__main__":
@@ -41,6 +41,11 @@ if __name__ == "__main__":
                 peer_join(peer_name,client_address)
 
             if message_type == b"U":
+                server_socket.sendto(b"go ahead", (client_address))
+                message, client_address = server_socket.recvfrom(1024)
+                fname, fsize = get_file_info(message)
+                upload_file(fname,)
+
 
 
             #send client address back to client
