@@ -1,6 +1,6 @@
 import socket
 
-my_address = '192.168.1.152'
+my_address = '127.0.0.1'
 port = 13000
 
 peers = {"peer423":('127.0.0.1', 59755)}
@@ -14,7 +14,7 @@ def peer_join(name, address):
 
     portnum = (address[1]).to_bytes(8, byteorder='big')
 
-    server_socket.sendto(portnum+b"peer joined",(address[0],address[1]))
+    server_socket.sendto(portnum+b"peer joined", (address[0], address[1]))
 
     print(f"{name} has joined")
     print(peers)
@@ -43,6 +43,25 @@ if __name__ == "__main__":
         while True:
             message, client_address = server_socket.recvfrom(1024)
             message_type = message[:1]
+
+            if message_type == b"R":
+                server_socket.sendto(b"need filename", (client_address))
+                fileN, client_address = server_socket.recvfrom(1024)
+                found = False
+                j = 0
+                for i in files:
+                    if (list(files.keys())[0][0]) == fileN.decode():
+                        print("found: " + fileN.decode())
+                        fileInfo = str(list(files.items())[j])
+                        server_socket.sendto(fileInfo.encode(), (client_address))
+                        found = True
+                        break
+                    j+=1
+                if found == False:
+                    server_socket.sendto(b"not found: " + fileN, (client_address))
+
+
+                #print(fileN.decode())
 
             if message_type == b"J":
                 peer_name = message[1:].decode()

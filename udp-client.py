@@ -4,11 +4,11 @@ import os.path as path
 import sys
 
 
-server_address = '192.168.1.152'
+server_address = '127.0.0.1'
 port = 13000
-X = (r.randint(1,10000))
+X = (r.randint(1, 10000))
 
-name = "peer"+ str(X)
+name = "peer" + str(X)
 
 '''
 def send_file( address: (str, int),filename: str):
@@ -92,10 +92,13 @@ def get_file_size(file_name: str) -> int:
     return size
 
 def request_file(filename):
-    file = bytes(filename.encode())
-    udp_client_socket.sendto(file,(server_address,port))
-
-    response,address = udp_client_socket.recvfrom(1024)
+    fileN = bytes(filename.encode())
+    udp_client_socket.sendto(b"R",(server_address,port))
+    response, address = udp_client_socket.recvfrom(1024)
+    if response == b"need filename":
+        udp_client_socket.sendto(fileN, (server_address, port))
+    response, address = udp_client_socket.recvfrom(1024)
+    print(response.decode())
 
 def upload_file():
     udp_client_socket.sendto(b"U", (server_address, port))
@@ -139,6 +142,10 @@ if __name__ == "__main__":
 
             if message == "U":
                 upload_file()
+
+            if message == "P":
+                name = input("Input File Name: ")
+                request_file(name)
 
             '''
             if response == b"request":
