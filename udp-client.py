@@ -98,7 +98,13 @@ def request_file(filename):
     if response == b"need filename":
         udp_client_socket.sendto(fileN, (server_address, port))
     response, address = udp_client_socket.recvfrom(1024)
-    print(response.decode())
+    if response == b"found":
+        record, address = udp_client_socket.recvfrom(1024)
+        peerAddress, address = udp_client_socket.recvfrom(1024)
+        print(record.decode())
+        print(peerAddress.decode())
+    else:
+        print(response.decode())
 
 def upload_file():
     udp_client_socket.sendto(b"U", (server_address, port))
@@ -113,10 +119,9 @@ def upload_file():
             return
 
 
+def join_Network():
 
-def join_Network(name):
-
-    udp_client_socket.sendto(b"J" + name.encode(), (server_address, port))
+    udp_client_socket.sendto(b"J", (server_address, port))
     response, address = udp_client_socket.recvfrom(1024)
 
     if response[8:] == b"peer joined":
@@ -136,14 +141,14 @@ if __name__ == "__main__":
             message_type = bytes(message.encode())
 
             if message == "J":
-                tcp_port = join_Network(name)
+                tcp_port = join_Network()
                 print(tcp_port)
                 server_socket.bind((socket.gethostbyname(hostname), tcp_port))
 
             if message == "U":
                 upload_file()
 
-            if message == "P":
+            if message == "R":
                 name = input("Input File Name: ")
                 request_file(name)
 

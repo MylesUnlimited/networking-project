@@ -3,12 +3,13 @@ import socket
 my_address = '127.0.0.1'
 port = 13000
 
-peers = {"peer423":('127.0.0.1', 59755)}
+peers = {"peer1":('127.0.0.1', 59755)}
 
-files = {("test.png",25):"peer423"}
+files = {("test.png",25):"peer1"}
 
 
-def peer_join(name, address):
+def peer_join(address):
+    name = "peer"+str(len(peers)+1)
     peers[name] = address
     print((address[1]))
 
@@ -50,22 +51,26 @@ if __name__ == "__main__":
                 found = False
                 j = 0
                 for i in files:
-                    if (list(files.keys())[0][0]) == fileN.decode():
-                        print("found: " + fileN.decode())
-                        fileInfo = str(list(files.items())[j])
-                        server_socket.sendto(fileInfo.encode(), (client_address))
+                    if (list(files.keys())[j][0]) == fileN.decode():
+
+                        server_socket.sendto(b"found", (client_address))
+                        fileRecord = str(list(files.items())[j])
+                        server_socket.sendto(fileRecord.encode(), (client_address))
+                        fileInfo = list(files.keys())[j]
+                        peerAddress = str(peers[files[fileInfo]])
+                        server_socket.sendto(peerAddress.encode(), (client_address))
+
                         found = True
                         break
-                    j+=1
+                    j += 1
                 if found == False:
-                    server_socket.sendto(b"not found: " + fileN, (client_address))
+                    server_socket.sendto(fileN + b" not found", (client_address))
 
 
                 #print(fileN.decode())
 
             if message_type == b"J":
-                peer_name = message[1:].decode()
-                peer_join(peer_name,client_address)
+                peer_join(client_address)
 
             if message_type == b"U":
                 server_socket.sendto(b"go ahead", (client_address))
