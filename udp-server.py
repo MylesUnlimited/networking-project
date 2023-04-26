@@ -1,6 +1,4 @@
 import socket
-import random as rand
-import pandas as pd
 
 my_address = '192.168.1.152'
 port = 13000
@@ -24,8 +22,11 @@ def peer_join(name, address):
 def get_file_info(data: bytes) -> (str, int):
     return data[8:].decode(), int.from_bytes(data[:8], byteorder='big')
 
-def upload_file(name, filename, filesize, address):
+def upload_file(filename, filesize, address):
+    name = {i for i in files if files[i] == address}
     files[(filename,filesize)] = name
+    print(files)
+    server_socket.sendto(b"uploaded", (address))
 
 if __name__ == "__main__":
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -44,7 +45,7 @@ if __name__ == "__main__":
                 server_socket.sendto(b"go ahead", (client_address))
                 message, client_address = server_socket.recvfrom(1024)
                 fname, fsize = get_file_info(message)
-                upload_file(fname,)
+                upload_file(fname,fsize,client_address)
 
 
 

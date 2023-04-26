@@ -106,6 +106,7 @@ def upload_file():
         udp_client_socket.sendto(size + bytes(filename.encode()), (server_address, port))
         response, address = udp_client_socket.recvfrom(1024)
         if response == b"uploaded":
+            print("working")
             return
 
 
