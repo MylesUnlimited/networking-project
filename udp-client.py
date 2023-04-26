@@ -1,6 +1,6 @@
 import socket
 import random as r
-import os
+#import os
 import os.path as path
 import sys
 
@@ -14,7 +14,7 @@ name = "peer"+ str(X)
 
 def get_file_info(data: bytes) -> (str, int):
     return data[8:].decode(), int.from_bytes(data[:8], byteorder='big')
-
+'''
 def send_file( address: (str, int),filename: str):
     file_size = get_file_size(filename)
     size = (file_size).to_bytes(8, byteorder='big')
@@ -61,7 +61,7 @@ def receive_file(conn_socket: socket, file_name: str, file_size: int):
         except OSError as oe:
             print(oe)
             os.remove(file_name)
-
+'''
 def get_file_size(file_name: str) -> int:
     size = 0
     try:
@@ -78,8 +78,9 @@ def request_file():
         filename = input("Filename: ")
         udp_client_socket.sendto(bytes(filename.encode()), (server_address, port))
         response,address = udp_client_socket.recvfrom(1024)
+        tcpport, tcpip = get_file_info(response)
+        print(f'{tcpport}, {tcpip} has the file')
 
-        tcp_port, tcp_ip = get_file_info(response)
 
 def upload_file():
     udp_client_socket.sendto(b"U", (server_address, port))
@@ -113,12 +114,12 @@ if __name__ == "__main__":
         while True:
             message = input("Message Type: ")
             message_type = bytes(message.encode())
-
+            '''
             reply = tcp_client_socket.recv(BUFFER_SIZE)
 
             if reply == b"request":
                 tcp_client_socket.send(b"ready")
-
+            '''
 
             if message == "J":
                 tcp_port = join_Network(name)
@@ -129,7 +130,7 @@ if __name__ == "__main__":
                 upload_file()
 
             if message == "R":
-
+                request_file()
 
             #print(f'Response from {address[0],address[1]} is "{response.decode()}"')
     except KeyboardInterrupt as ki:

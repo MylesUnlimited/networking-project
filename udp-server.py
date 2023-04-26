@@ -36,11 +36,19 @@ def get_value(keyname):
 
     return "key doesn't exist"
 
+def get_ip(peername):
+    for key, value in peers.items():
+        print((key))
+        if peername == key:
+            return value
+
+    return "key doesn't exist"
+
 def find_file(filename, address):
-    ip, port = get_peer(get_value(filename))
+    ip, port = get_ip(get_value(filename))
 
     port = (port).to_bytes(8, byteorder='big')
-    ip.encode()
+    ip = ip.encode()
     server_socket.sendto(port+bytes(ip), (address))
 
 
@@ -73,6 +81,8 @@ if __name__ == "__main__":
             if message_type == b"R":
                 server_socket.sendto(b"go ahead", (client_address))
                 message, client_address = server_socket.recvfrom(1024)
+                print(message.decode())
+                find_file(message.decode(),client_address)
 
     except KeyboardInterrupt as ki:
         print("Shutting down...")
