@@ -6,9 +6,6 @@ import sys
 
 server_address = '127.0.0.1'
 port = 13000
-X = (r.randint(1, 10000))
-
-name = "peer" + str(X)
 
 '''
 def send_file( address: (str, int),filename: str):
@@ -101,10 +98,10 @@ def request_file(filename):
     if response == b"found":
         record, address = udp_client_socket.recvfrom(1024)
         peerAddress, address = udp_client_socket.recvfrom(1024)
-        print(record.decode())
-        print(peerAddress.decode())
+        print("Record Info: " + record.decode())
+        print("Peer Address: " + peerAddress.decode())
     else:
-        print(response.decode())
+        print("Peer Address: "+response.decode())
 
 def upload_file():
     udp_client_socket.sendto(b"U", (server_address, port))
@@ -115,7 +112,7 @@ def upload_file():
         udp_client_socket.sendto(size + bytes(filename.encode()), (server_address, port))
         response, address = udp_client_socket.recvfrom(1024)
         if response == b"uploaded":
-            print("working")
+            print("file uploaded")
             return
 
 
