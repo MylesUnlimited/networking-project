@@ -26,8 +26,24 @@ def get_peer(val):
     for key, value in peers.items():
         if val == value:
             return key
+    return "key doesn't exist"
+
+def get_value(keyname):
+    for key, value in files.items():
+
+        if keyname == key[0]:
+            return value
 
     return "key doesn't exist"
+
+def find_file(filename, address):
+    ip, port = get_peer(get_value(filename))
+
+    port = (port).to_bytes(8, byteorder='big')
+    ip.encode()
+    server_socket.sendto(port+bytes(ip), (address))
+
+
 
 def upload_file(filename, filesize, address):
     name = get_peer(address)
@@ -54,13 +70,10 @@ if __name__ == "__main__":
                 fname, fsize = get_file_info(message)
                 upload_file(fname,fsize,client_address)
 
+            if message_type == b"R":
+                server_socket.sendto(b"go ahead", (client_address))
+                message, client_address = server_socket.recvfrom(1024)
 
-
-            #send client address back to client
-
-            #ize = int.from_bytes(size, byteorder='big')
-            # message, client_address = server_socket.recvfrom(size)
-            #response = ''.join(list(map(lambda ch: '' if ch in 'aeiou' else ch, message)))
     except KeyboardInterrupt as ki:
         print("Shutting down...")
     finally:
