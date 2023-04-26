@@ -22,8 +22,15 @@ def peer_join(name, address):
 def get_file_info(data: bytes) -> (str, int):
     return data[8:].decode(), int.from_bytes(data[:8], byteorder='big')
 
+def get_peer(val):
+    for key, value in peers.items():
+        if val == value:
+            return key
+
+    return "key doesn't exist"
+
 def upload_file(filename, filesize, address):
-    name = {i for i in files if files[i] == address}
+    name = get_peer(address)
     files[(filename,filesize)] = name
     print(files)
     server_socket.sendto(b"uploaded", (address))
