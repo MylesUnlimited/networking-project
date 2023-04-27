@@ -115,6 +115,20 @@ def upload_file():
             print("file uploaded")
             return
 
+def remove_file(filename):
+    namefile = bytes(filename.encode())
+    udp_client_socket.sendto(b"D", (server_address, port))
+    response, address = udp_client_socket.recvfrom(1024)
+    if response == b"need filename":
+        udp_client_socket.sendto(namefile, (server_address, port))
+
+    response, address = udp_client_socket.recvfrom(1024)
+    if response == b"found":
+        print("file deleted")
+
+    else:
+        print(response.decode())
+
 
 def join_Network():
 
@@ -148,6 +162,10 @@ if __name__ == "__main__":
             if message == "R":
                 name = input("Input File Name: ")
                 request_file(name)
+
+            if message == "D":
+                name = input("Input File Name: ")
+                remove_file(name)
 
             '''
             if response == b"request":
