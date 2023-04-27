@@ -51,8 +51,6 @@ def find_file(filename, address):
     ip = ip.encode()
     server_socket.sendto(port+bytes(ip), (address))
 
-
-
 def upload_file(filename, filesize, address):
     name = get_peer(address)
     files[(filename,filesize)] = name
