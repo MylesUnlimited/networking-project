@@ -129,6 +129,21 @@ def remove_file(filename):
     else:
         print(response.decode())
 
+def exit_network(peer):
+    peer1 = bytes(peer.encode())
+    udp_client_socket.sendto(b"E", (server_address, port))
+    response, address = udp_client_socket.recvfrom(1024)
+
+
+    if response == b"peer exited":
+        udp_client_socket.sendto(peer1, (server_address, port))
+
+    response, address = udp_client_socket.recvfrom(1024)
+    if response == b"found":
+        print("peer deleted")
+
+    else:
+        print(response.decode())
 
 def join_Network():
 
@@ -166,6 +181,10 @@ if __name__ == "__main__":
             if message == "D":
                 name = input("Input File Name: ")
                 remove_file(name)
+
+            if message == "E":
+                peer = input("Input Peer Name: ")
+                exit_network(peer)
 
             '''
             if response == b"request":

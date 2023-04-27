@@ -85,6 +85,22 @@ if __name__ == "__main__":
                 if found == False:
                     server_socket.sendto(namefile + b" not found", (client_address))
 
+            if message == b"E":
+                server_socket.sendto(b"peer exited", (client_address))
+                peer1, client_address = server_socket.recvfrom(1024)
+                found = False
+                b = 0
+                for i in peers:
+                    if (list(peers.keys())[b]) == peer1.decode():
+                        server_socket.sendto(b"found", (client_address))
+                        peers.pop(list(peers.keys())[b])
+                        found = True
+                        print(peers)
+                        break
+                    b += 1
+                if found == False:
+                    server_socket.sendto(peer1 + b" not found", (client_address))
+
                 # print(fileN.decode())
 
             if message_type == b"J":
@@ -106,4 +122,3 @@ if __name__ == "__main__":
     finally:
 
         server_socket.close()
-
