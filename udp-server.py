@@ -7,6 +7,7 @@ peers = {"peer1": ('127.0.0.1', 59755)}
 
 files = {("test.png", 25): "peer1"}
 
+# test
 
 def peer_join(address):
     name = "peer" + str(len(peers) + 1)

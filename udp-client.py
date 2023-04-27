@@ -7,6 +7,8 @@ import sys
 server_address = '127.0.0.1'
 port = 13000
 
+# test
+
 '''
 def send_file( address: (str, int),filename: str):
     # get the file size in bytes
