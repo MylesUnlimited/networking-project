@@ -25,7 +25,7 @@ def join_Network(name):
         udp_client_socket.sendto(tcp_IP.encode(), (server_address, port))
     response, address = udp_client_socket.recvfrom(1024)
     if response[8:] == b"peer joined":
-        print("Peer Joined")
+        print(pname + " Joined")
         return int.from_bytes(response[:8], byteorder='big')
 
 tcp_port = join_Network(pname)
