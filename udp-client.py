@@ -5,10 +5,8 @@ import os.path as path
 import sys
 import threading
 
-hostname = socket.gethostname()
-socket.gethostbyname(hostname)
 
-server_address = '10.33.17.97'
+server_address = '192.168.1.152'
 port = 13000
 BUFFER_SIZE = 1024
 X = (r.randint(1,10000))
@@ -93,34 +91,43 @@ def get_file_size(file_name: str) -> int:
     return size
 
 def tcp_client():
-    global tcp_client_socket
-    tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    global server_socket
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     hostname = socket.gethostname()
-    server_socket.bind(((socket.gethostbyname(hostname), tcp_port)))
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    server_socket.bind((socket.gethostbyname(hostname), tcp_port))
     server_socket.listen(1)
+
 
     try:
         while True:
+
             print(tcp_port)
             print("Started")
             conn, addr = server_socket.accept()
+
             isDone = False
             while not isDone:
-                conn.send(b'Ready')
                 data = conn.recv(1024)
-                if data == b"Cool":
-                    print("Awesome")
-                    conn.send(b"end")
-                    conn.shutdown(socket.SHUT_RD)
-                    isDone = True
+                if data == b"Connected":
+                    conn.send(b'Ready')
+                    data = conn.recv(1024)
+                    if data == b"Cool":
+                        print("Awesome")
+                        conn.send(b"end")
+                        #server_socket.shutdown(socket.SHUT_RDWR)
+
+                        #conn.shutdown(socket.SHUT_RDWR)
 
 
+                        conn.close()
+                        print("Reached")
+                        isDone = True
+
+    except KeyboardInterrupt as ki:
+        print("Shutting down...")
     finally:
-
         server_socket.close()
-        tcp_client_socket.close()
+
 
 
 def udp_client():
@@ -132,16 +139,34 @@ def udp_client():
             filename = input("Filename: ")
             udp_client_socket.sendto(bytes(filename.encode()), (server_address, port))
             response, address = udp_client_socket.recvfrom(1024)
+            tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
             tcp_ip, t_port = get_file_info(response)
             print(tcp_ip,t_port)
-            tcp_client_socket.connect((tcp_ip,t_port))
-            response = tcp_client_socket.recv(1024)
-            if response == b"Ready":
-                tcp_client_socket.send(b"Cool")
-            response = tcp_client_socket.recv(1024)
-            if response == b"end":
-                print("Ended")
-                tcp_client_socket.shutdown(socket.SHUT_RD)
+            try:
+                tcp_client_socket.connect((tcp_ip,t_port))
+                tcp_client_socket.send(b"Connected")
+                response = tcp_client_socket.recv(1024)
+                if response == b"Ready":
+                    print("Got")
+                    tcp_client_socket.send(b"Cool")
+                response = tcp_client_socket.recv(1024)
+                if response == b"end":
+                    print("Ended")
+                    tcp_client_socket.shutdown(socket.SHUT_RDWR)
+                    tcp_client_socket.close()
+            except OSError:
+                print("Hello")
+                tcp_client_socket.send(b"Connected")
+                response = tcp_client_socket.recv(1024)
+                if response == b"Ready":
+                    tcp_client_socket.send(b"Cool")
+                response = tcp_client_socket.recv(1024)
+                if response == b"end":
+                    print("Ended")
+                    tcp_client_socket.shutdown(socket.SHUT_RDWR)
+                    tcp_client_socket.close()
+
 
     def upload_file():
         udp_client_socket.sendto(b"U", (server_address, port))
