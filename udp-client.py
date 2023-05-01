@@ -4,7 +4,7 @@ import os
 import os.path as path
 import sys
 import threading
-
+import time
 
 server_address = '127.0.0.1'
 port = 13000
@@ -16,12 +16,13 @@ udp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 pname = "peer"+ str(X)
 
 hostname = socket.gethostname()
+tcp_IP = socket.gethostbyname(hostname)
 
 def join_Network(name):
     udp_client_socket.sendto(b"J" + name.encode(), (server_address, port))
     response, address = udp_client_socket.recvfrom(1024)
     if response == b"need TCP address":
-        udp_client_socket.sendto(socket.gethostbyname(hostname).encode(), (server_address, port))
+        udp_client_socket.sendto(tcp_IP.encode(), (server_address, port))
     response, address = udp_client_socket.recvfrom(1024)
     if response[8:] == b"peer joined":
         print("Peer Joined")
@@ -97,13 +98,13 @@ def get_file_size(file_name: str) -> int:
 def tcp_client():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    server_socket.bind((socket.gethostbyname(hostname), tcp_port))
+    server_socket.bind((tcp_IP, tcp_port))
     server_socket.listen(1)
 
     try:
         while True:
 
-            print((socket.gethostbyname(hostname), tcp_port))
+            print((tcp_IP, tcp_port))
             print("Started")
             conn, addr = server_socket.accept()
 
@@ -143,10 +144,10 @@ def udp_client():
             response, address = udp_client_socket.recvfrom(1024)
             tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-            tcp_ip, t_port = get_file_info(response)
-            print(tcp_ip,t_port)
+            peer_ip, peer_port = get_file_info(response)
+            print(peer_ip,peer_port)
             try:
-                tcp_client_socket.connect((tcp_ip,t_port))
+                tcp_client_socket.connect((peer_ip,peer_port))
                 tcp_client_socket.send(b"Connected")
                 response = tcp_client_socket.recv(1024)
                 if response == b"Ready":
@@ -174,7 +175,7 @@ def udp_client():
         udp_client_socket.sendto(b"U", (server_address, port))
         response, address = udp_client_socket.recvfrom(1024)
         if response == b"need TCP address":
-            udp_client_socket.sendto(socket.gethostbyname(hostname).encode(), (server_address, port))
+            udp_client_socket.sendto(tcp_IP.encode(), (server_address, port))
         response, address = udp_client_socket.recvfrom(1024)
         if response == b"go ahead":
             filename = input("Filename: ")
@@ -182,8 +183,37 @@ def udp_client():
             udp_client_socket.sendto(size + bytes(filename.encode()), (server_address, port))
             response, address = udp_client_socket.recvfrom(1024)
             if response == b"uploaded":
-                print("working")
+                print("file uploaded")
                 return
+
+    def remove_file(filename):
+        namefile = bytes(filename.encode())
+        udp_client_socket.sendto(b"D", (server_address, port))
+        response, address = udp_client_socket.recvfrom(1024)
+        if response == b"need filename":
+            udp_client_socket.sendto(namefile, (server_address, port))
+
+        response, address = udp_client_socket.recvfrom(1024)
+        if response == b"deleted":
+            print("file deleted")
+
+        else:
+            print(response.decode())
+
+    def exit_network(peer):
+        peer1 = bytes(peer.encode())
+        udp_client_socket.sendto(b"E", (server_address, port))
+        response, address = udp_client_socket.recvfrom(1024)
+
+        if response == b"need peername":
+            udp_client_socket.sendto(peer1, (server_address, port))
+
+        response, address = udp_client_socket.recvfrom(1024)
+        if response == b"peer deleted":
+            print("peer deleted")
+
+        else:
+            print(response.decode())
 
     try:
         while True:
@@ -195,6 +225,14 @@ def udp_client():
             elif message == "R":
                 request_file()
 
+            if message == "D":
+                name = input("Input File Name: ")
+                remove_file(name)
+
+            if message == "E":
+                peer = input("Input Peer Name: ")
+                exit_network(peer)
+
     except KeyboardInterrupt as ki:
         print("Shutting down...")
     finally:
@@ -203,10 +241,11 @@ def udp_client():
 
 if __name__ == "__main__":
     try:
-        t1 = threading.Thread(target=udp_client)
-        t2 = threading.Thread(target=tcp_client)
+        t1 = threading.Thread(target=tcp_client)
+        t2 = threading.Thread(target=udp_client)
 
         t1.start()
+        time.sleep(0.01)
         t2.start()
 
         t1.join()

@@ -89,6 +89,38 @@ if __name__ == "__main__":
                 print(message.decode())
                 find_file(message.decode(),client_address)
 
+            if message == b"D":
+                server_socket.sendto(b"need filename", (client_address))
+                namefile, client_address = server_socket.recvfrom(1024)
+                found = False
+                a = 0
+                for i in files:
+                    if (list(files.keys())[a][0]) == namefile.decode():
+                        server_socket.sendto(b"deleted", (client_address))
+                        files.pop(list(files.keys())[a])
+                        found = True
+                        print(files)
+                        break
+                    a += 1
+                if found == False:
+                    server_socket.sendto(namefile + b" not found", (client_address))
+
+            if message == b"E":
+                server_socket.sendto(b"need peername", (client_address))
+                peer1, client_address = server_socket.recvfrom(1024)
+                found = False
+                b = 0
+                for i in peers:
+                    if (list(peers.keys())[b]) == peer1.decode():
+                        server_socket.sendto(b"peer deleted", (client_address))
+                        peers.pop(list(peers.keys())[b])
+                        found = True
+                        print(peers)
+                        break
+                    b += 1
+                if found == False:
+                    server_socket.sendto(peer1 + b" not found", (client_address))
+
     except KeyboardInterrupt as ki:
         print("Shutting down...")
     finally:
