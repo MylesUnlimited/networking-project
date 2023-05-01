@@ -6,7 +6,7 @@ import sys
 import threading
 
 
-server_address = '192.168.1.152'
+server_address = '127.0.0.1'
 port = 13000
 BUFFER_SIZE = 1024
 X = (r.randint(1,10000))
@@ -15,10 +15,14 @@ udp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 pname = "peer"+ str(X)
 
+hostname = socket.gethostname()
+
 def join_Network(name):
     udp_client_socket.sendto(b"J" + name.encode(), (server_address, port))
     response, address = udp_client_socket.recvfrom(1024)
-
+    if response == b"need TCP address":
+        udp_client_socket.sendto(socket.gethostbyname(hostname).encode(), (server_address, port))
+    response, address = udp_client_socket.recvfrom(1024)
     if response[8:] == b"peer joined":
         print("Peer Joined")
         return int.from_bytes(response[:8], byteorder='big')
@@ -91,17 +95,15 @@ def get_file_size(file_name: str) -> int:
     return size
 
 def tcp_client():
-    hostname = socket.gethostname()
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     server_socket.bind((socket.gethostbyname(hostname), tcp_port))
     server_socket.listen(1)
 
-
     try:
         while True:
 
-            print(tcp_port)
+            print((socket.gethostbyname(hostname), tcp_port))
             print("Started")
             conn, addr = server_socket.accept()
 
@@ -170,6 +172,9 @@ def udp_client():
 
     def upload_file():
         udp_client_socket.sendto(b"U", (server_address, port))
+        response, address = udp_client_socket.recvfrom(1024)
+        if response == b"need TCP address":
+            udp_client_socket.sendto(socket.gethostbyname(hostname).encode(), (server_address, port))
         response, address = udp_client_socket.recvfrom(1024)
         if response == b"go ahead":
             filename = input("Filename: ")
