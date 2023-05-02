@@ -145,7 +145,7 @@ def tcp_client():
                                 conn.send(chunk)
                             elif len(chunk) == 0:
                                 conn.close()
-                                is_finished = True
+                                isDone = True
 
 
 
@@ -157,7 +157,7 @@ def tcp_client():
 
 def udp_client():
 
-    def upload_file(conn_socket: socket, file_name: str, file_size: int):
+    def download_file(conn_socket: socket, file_name: str, file_size: int):
         # create a new file to store the received data
         file_name += '.temp'
         # please do not change the above line!
@@ -196,7 +196,7 @@ def udp_client():
             response = tcp_client_socket.recv(1024) #file size
             fsize = int.from_bytes(response,byteorder='big')
             tcp_client_socket.send(b"go ahead")
-            upload_file(tcp_client_socket,filename,fsize)
+            download_file(tcp_client_socket,filename,fsize)
             tcp_client_socket.shutdown(socket.SHUT_RDWR)
             tcp_client_socket.close()
 
