@@ -7,7 +7,7 @@ import threading
 import time
 
 
-server_address = "192.168.1.155"
+server_address = "192.168.1.205"
 port = 13000
 BUFFER_SIZE = 1024
 X = (r.randint(1,10000))
@@ -145,7 +145,8 @@ def tcp_client():
                                 conn.send(chunk)
                             elif len(chunk) == 0:
                                 conn.close()
-                                isDone = True
+                                is_finished = True
+                        isDone = True
 
 
 
