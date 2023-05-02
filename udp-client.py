@@ -6,6 +6,16 @@ import sys
 import threading
 import time
 
+
+server_address = "192.168.1.205"
+port = 13000
+BUFFER_SIZE = 1024
+X = (r.randint(1,10000))
+
+udp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+pname = "peer"+ str(X)
+
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -18,22 +28,7 @@ def get_ip():
         s.close()
     return IP
 
-server_address = get_ip()
-port = 13000
-BUFFER_SIZE = 1024
-X = (r.randint(1,10000))
-
-udp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-pname = "peer"+ str(X)
-
-#hostname = socket.gethostname()
-#tcp_IP = socket.gethostbyname(hostname)
-tcp_IP = server_address
-
-
-
-
+tcp_IP = get_ip()
 
 def join_Network(name):
     udp_client_socket.sendto(b"J" + name.encode(), (server_address, port))
