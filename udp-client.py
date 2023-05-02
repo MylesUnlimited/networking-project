@@ -52,14 +52,12 @@ def send_file( address: (str, int),filename: str):
     file_size = get_file_size(filename)
     size = (file_size).to_bytes(8, byteorder='big')
     name = filename.encode()
-
     try:
         message = size + name
         client_socket.sendto(message, address)
         reply = client_socket.recv(BUFFER_SIZE)
         if reply != b'go ahead':
             raise Exception('Bad server response - was not go ahead!')
-
         # open the file to be transferred
         with open(filename, 'rb') as file:
             # read the file in chunks and send each chunk to the server
@@ -70,7 +68,6 @@ def send_file( address: (str, int),filename: str):
                     client_socket.send(chunk)
                 elif len(chunk) == 0:
                     is_done = True
-
     except OSError as e:
         print(f'An error occurred while sending the file:\n\t{e}')
     finally:
@@ -78,13 +75,11 @@ def send_file( address: (str, int),filename: str):
 '''
 '''
 def receive_file(address,file_name: str, file_size: int):
-
     tcp_client_socket.connect(address)
     tcp_client_socket.send(b"hello")
     reply = tcp_client_socket.recv(BUFFER_SIZE)
     if reply == b"ready":
         file_name += '.temp'
-
         with open(file_name, 'wb') as file:
             retrieved_size = 0
             try:
@@ -92,7 +87,6 @@ def receive_file(address,file_name: str, file_size: int):
                     chunk = tcp_client_socket.recv(BUFFER_SIZE)
                     retrieved_size += len(chunk)
                     file.write(chunk)
-
             except OSError as oe:
                 print(oe)
                 os.remove(file_name)
@@ -113,6 +107,8 @@ def tcp_client():
     server_socket.bind((tcp_IP, tcp_port))
     server_socket.listen(1)
 
+
+
     try:
         while True:
 
@@ -125,18 +121,28 @@ def tcp_client():
                 data = conn.recv(1024)
                 if data == b"Connected":
                     conn.send(b'Ready')
-                    data = conn.recv(1024)
-                    if data == b"Cool":
-                        print("Awesome")
-                        conn.send(b"end")
-                        #server_socket.shutdown(socket.SHUT_RDWR)
+                    data = conn.recv(1024) #file name
+                    fname = data.decode()
+                    fsize = get_file_size(data.decode())
+                    conn.send((fsize).to_bytes(8,byteorder='big')) #sending file size
+                    data = conn.recv(1024) #go ahead
+                    if data != b'go ahead':
+                         raise Exception('Bad server response - was not go ahead!')
 
-                        #conn.shutdown(socket.SHUT_RDWR)
-
-
-                        conn.close()
-                        print("Reached")
+                        # open the file to be transferred
+                    with open(fname, 'rb') as file:
+                    # read the file in chunks and send each chunk to the server
+                        is_finished = False
+                        while not is_finished:
+                            chunk = file.read(BUFFER_SIZE)
+                            if len(chunk) > 0:
+                                conn.send(chunk)
+                            elif len(chunk) == 0:
+                                conn.close()
+                                is_finished = True
                         isDone = True
+
+
 
     except KeyboardInterrupt as ki:
         print("Shutting down...")
@@ -144,8 +150,22 @@ def tcp_client():
         server_socket.close()
 
 
-
 def udp_client():
+
+    def download_file(conn_socket: socket, file_name: str, file_size: int):
+        # create a new file to store the received data
+        file_name += '.temp'
+        # please do not change the above line!
+        with open(file_name, 'wb') as file:
+            retrieved_size = 0
+            try:
+                while retrieved_size < file_size:
+                    chunk = conn_socket.recv(BUFFER_SIZE)
+                    retrieved_size += len(chunk)
+                    file.write(chunk)
+            except OSError as oe:
+                print(oe)
+                os.remove(file_name)
 
     def request_file():
         udp_client_socket.sendto(b"R", (server_address, port))
@@ -158,29 +178,20 @@ def udp_client():
 
             peer_ip, peer_port = get_file_info(response)
             print(peer_ip,peer_port)
-            try:
-                tcp_client_socket.connect((peer_ip,peer_port))
-                tcp_client_socket.send(b"Connected")
-                response = tcp_client_socket.recv(1024)
-                if response == b"Ready":
-                    print("Got")
-                    tcp_client_socket.send(b"Cool")
-                response = tcp_client_socket.recv(1024)
-                if response == b"end":
-                    print("Ended")
-                    tcp_client_socket.shutdown(socket.SHUT_RDWR)
-                    tcp_client_socket.close()
-            except OSError:
-                print("Hello")
-                tcp_client_socket.send(b"Connected")
-                response = tcp_client_socket.recv(1024)
-                if response == b"Ready":
-                    tcp_client_socket.send(b"Cool")
-                response = tcp_client_socket.recv(1024)
-                if response == b"end":
-                    print("Ended")
-                    tcp_client_socket.shutdown(socket.SHUT_RDWR)
-                    tcp_client_socket.close()
+
+            tcp_client_socket.connect((peer_ip,peer_port))
+            tcp_client_socket.send(b"Connected")
+            response = tcp_client_socket.recv(1024)
+            if response == b"Ready":
+                fname = filename.encode()
+                tcp_client_socket.send(bytes(fname))
+            response = tcp_client_socket.recv(1024) #file size
+            fsize = int.from_bytes(response,byteorder='big')
+            tcp_client_socket.send(b"go ahead")
+            download_file(tcp_client_socket,filename,fsize)
+            tcp_client_socket.shutdown(socket.SHUT_RDWR)
+            tcp_client_socket.close()
+
 
 
     def upload_file():
@@ -265,5 +276,3 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt as ki:
         print("Shutting down...")
-
-
