@@ -7,7 +7,7 @@ import threading
 import time
 
 
-server_address = "192.168.1.205"
+server_address = "10.33.17.16"
 port = 13000
 BUFFER_SIZE = 1024
 X = (r.randint(1,10000))
@@ -189,7 +189,7 @@ def udp_client():
             fsize = int.from_bytes(response,byteorder='big')
             tcp_client_socket.send(b"go ahead")
             download_file(tcp_client_socket,filename,fsize)
-            tcp_client_socket.shutdown(socket.SHUT_RDWR)
+            #tcp_client_socket.shutdown(socket.SHUT_RDWR)
             tcp_client_socket.close()
 
 

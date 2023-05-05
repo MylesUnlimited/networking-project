@@ -1,6 +1,6 @@
 import socket
 
-my_address = "192.168.1.205"
+my_address = "10.33.17.16"
 port = 13000
 
 peers = {"peer423":('127.0.0.1', 59755)}
