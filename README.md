@@ -13,3 +13,9 @@ HOW TO USE:
 * From there depending on the message you chose you may be required to give some additional information.
 
 That's all! Connect multiple clients, send, request, register, and deregister files, the sky is the limit!
+
+
+
+
+If you want to see our progress from start to finish, check out our blog! 
+https://502bad-gateway.weebly.com/
